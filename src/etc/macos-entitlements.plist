@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+    Entitlements required to distribute MIT/GNU Scheme on macOS with the
+    hardened runtime (which notarization requires).
+
+    The native-code system executes compiled Scheme out of the heap.  On
+    AArch64 the heap is mapped twice: writable at the canonical
+    addresses, and read/execute in a shadow alias made with
+    mach_vm_remap.  The process therefore creates executable pages that
+    Apple did not sign, and under the hardened runtime that requires
+    allow-unsigned-executable-memory.
+
+    com.apple.security.cs.allow-jit is NOT sufficient, and is not used:
+    it governs MAP_JIT regions, whose write-protect toggle is
+    per-thread and exclusive, and so cannot support a heap that
+    interleaves code with data that the running code allocates.
+    Verified empirically: under the hardened runtime a binary carrying
+    only allow-jit fails to start, while one carrying
+    allow-unsigned-executable-memory runs normally.
+-->
+<plist version="1.0">
+  <dict>
+    <key>com.apple.security.cs.allow-unsigned-executable-memory</key>
+    <true/>
+  </dict>
+</plist>
