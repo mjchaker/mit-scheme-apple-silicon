@@ -106,8 +106,15 @@ which notarization requires, that needs an entitlement:
 
 ```sh
 src/etc/macos-codesign.sh "Developer ID Application: NAME (TEAMID)" \
-    $HOME/opt/mit-scheme/bin
+    $HOME/opt/mit-scheme
 ```
+
+Give it the whole prefix.  `bin` is not the only place an install puts
+a Mach-O: `lib/mit-scheme-ARCH-VERSION/macosx-starter` is one too, and
+it arrives carrying just the linker's ad-hoc signature.  Notarization
+fails the entire submission over it, reporting all three of no
+Developer ID, no secure timestamp and no hardened runtime, with
+nothing wrong in `bin` at all.
 
 The entitlement is `com.apple.security.cs.allow-unsigned-executable-memory`
 (`src/etc/macos-entitlements.plist`).  Measured on macOS 27, signing
@@ -121,10 +128,22 @@ with `--options runtime`:
 
 `allow-jit` is the wrong entitlement here: it governs `MAP_JIT`
 regions, and this port deliberately does not use `MAP_JIT` (see
-below).  Notarization itself is the usual `xcrun notarytool submit`
-followed by `xcrun stapler staple`; note a bare Unix tree of
-executables cannot be stapled, so staple the disk image or installer
-you actually ship.
+below).
+
+A bare Unix tree of executables cannot be stapled, so what ships has
+to be a disk image or installer.  `src/etc/macos-make-dmg.sh` does the
+whole sequence -- stage, relocate, sign, image, notarize, staple:
+
+```sh
+src/etc/macos-make-dmg.sh -p PROFILE -t \
+    "Developer ID Application: NAME (TEAMID)" $HOME/opt/mit-scheme
+```
+
+where `PROFILE` comes from `xcrun notarytool store-credentials`, and
+`-t` additionally emits the tarball described below from the same
+staging area.  Note
+that notarization requires a *Developer ID Application* certificate;
+the `Apple Development` certificates Xcode creates are rejected.
 
 ### Making a relocatable binary tarball
 
@@ -153,9 +172,19 @@ with `scheme` and `mit-scheme-aarch64le` as symlinks to it, and the
 real executable left under its versioned name.  Verify relocatability
 by moving the original install's `lib` aside and running the unpacked
 copy -- otherwise the test passes for the wrong reason, because the
-baked-in path still resolves.
+baked-in path still resolves.  (Equivalently, have the copy print
+`(system-library-directory-pathname)` and check that it names the
+copy's own tree.)
+
+As installed, `bin/mit-scheme` is itself a symlink to the versioned
+executable, so writing the wrapper with a shell redirect follows that
+symlink and overwrites the executable.  Delete it first.  The failure
+is quiet: what is left is a wrapper that `exec`s itself, and there is
+no Mach-O in `bin` for the signing pass to find.
 
 Code signatures survive `tar`, so sign before packaging.
+`src/etc/macos-make-dmg.sh` performs this whole sequence for a disk
+image.
 
 ### Documentation
 

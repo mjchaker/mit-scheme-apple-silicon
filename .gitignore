@@ -207,3 +207,6 @@ src/xml/Tags.sh
 
 # macOS Finder metadata
 .DS_Store
+
+# Distribution images built by src/etc/macos-make-dmg.sh
+*.dmg

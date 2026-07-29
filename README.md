@@ -24,21 +24,32 @@ apply to this port unchanged.
 
 ## Install the binary
 
-Download the tarball from
-[Releases](https://github.com/mjchaker/mit-scheme-apple-silicon/releases),
-then:
+Both downloads on
+[Releases](https://github.com/mjchaker/mit-scheme-apple-silicon/releases)
+hold the same binaries, signed with a Developer ID and notarized by
+Apple.
+
+Prefer the disk image. Its notarization ticket is stapled, so macOS
+validates it without a network round trip. Open
+`mit-scheme-12.1-aarch64le-darwin.dmg`, drag the folder inside to
+wherever you want it, and run `bin/mit-scheme` from there.
+
+The tarball suits scripted installs:
 
 ```sh
 tar xzf mit-scheme-12.1-aarch64le-darwin.tar.gz
 ./mit-scheme-12.1-aarch64le-darwin/bin/mit-scheme
 ```
 
-It is relocatable: `bin/mit-scheme` derives its library path from its
-own location, so it runs from wherever you unpack it.
+Either way it is relocatable: `bin/mit-scheme` derives its library
+path from its own location, so it runs from wherever you put it.
 
-> The released binaries are **ad-hoc signed**. That is fine for local
-> use but cannot be notarized. To distribute publicly, re-sign with a
-> Developer ID — see [Code signing](#code-signing).
+> A notarization ticket can be stapled to an image or an installer,
+> never to a loose tree of executables. The binaries in the tarball
+> carry the same notarization, but Gatekeeper confirms it online
+> instead of locally. In practice `tar` does not propagate the
+> quarantine attribute, so a `curl`-and-`tar` install is never
+> checked at all.
 
 ## Build from source
 
@@ -114,8 +125,13 @@ which notarization requires — that needs an entitlement:
 
 ```sh
 src/etc/macos-codesign.sh "Developer ID Application: NAME (TEAMID)" \
-    "$HOME/opt/mit-scheme/bin"
+    "$HOME/opt/mit-scheme"
 ```
+
+Pass the whole prefix, not just `bin`. An install has a second
+executable, `lib/mit-scheme-ARCH-VERSION/macosx-starter`, which ships
+with only the linker's ad-hoc signature; notarization rejects the
+entire submission over it.
 
 The entitlement is `com.apple.security.cs.allow-unsigned-executable-memory`
 ([macos-entitlements.plist](src/etc/macos-entitlements.plist)).
@@ -129,6 +145,42 @@ Measured under the hardened runtime:
 
 `allow-jit` is the wrong entitlement here: it governs `MAP_JIT`
 regions, which this port deliberately does not use.
+
+### Notarized disk image
+
+`macos-codesign.sh` signs an install tree in place.
+[macos-make-dmg.sh](src/etc/macos-make-dmg.sh) turns one into
+something distributable: it stages the tree, replaces `bin/mit-scheme`
+with the wrapper that makes it relocatable, signs the executables,
+builds a disk image, then notarizes and staples it.
+
+```sh
+xcrun notarytool store-credentials mit-scheme \
+    --apple-id YOU@example.com --team-id TEAMID
+
+src/etc/macos-make-dmg.sh -p mit-scheme -t \
+    "Developer ID Application: NAME (TEAMID)" "$HOME/opt/mit-scheme"
+```
+
+That writes `mit-scheme-12.1-aarch64le-darwin.dmg` and verifies it with
+`stapler validate` and `spctl`. Omit `-p` to build and sign without
+contacting Apple.
+
+`-t` writes `mit-scheme-12.1-aarch64le-darwin.tar.gz` alongside it from
+the same staging area, so the two downloads hold identical binaries and
+the tarball inherits the image's notarization. It is written only after
+everything else succeeds, so a rejected submission cannot leave behind
+a tarball that looks shippable.
+
+Notarization needs a **Developer ID Application** certificate. The
+`Apple Development` certificates Xcode creates are for running on your
+own registered devices; notarytool rejects them.
+
+Only the image is stapled. `stapler` accepts app bundles, installer
+packages and disk images — a bare Mach-O executable has nowhere to put
+the ticket. The executables inside are covered by the notarization
+record and validate online, so a user who copies them out while
+offline may still see a Gatekeeper prompt.
 
 ## Upstream bugs found
 

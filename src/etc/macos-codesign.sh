@@ -1,13 +1,21 @@
 #!/bin/sh
 # Sign an installed MIT/GNU Scheme for distribution on macOS.
 #
-# usage: macos-codesign.sh IDENTITY [BINDIR]
+# usage: macos-codesign.sh IDENTITY [DIR]
 #
 #   IDENTITY  a codesigning identity, e.g. "Developer ID Application:
 #             Your Name (TEAMID)".  Use "-" to sign ad hoc, which is
 #             fine for local use but cannot be notarized.
-#   BINDIR    directory holding the scheme executable; defaults to the
-#             bindir of the running install if it can be guessed.
+#   DIR       a tree to walk; every Mach-O file under it is signed.
+#             Defaults to the prefix of the running install if it can
+#             be guessed.
+#
+# Pass the whole install prefix, not just bin.  An install has a second
+# executable, lib/mit-scheme-ARCH-VERSION/macosx-starter, which arrives
+# carrying only the linker's ad-hoc signature.  Notarization rejects
+# the entire submission over it -- no Developer ID, no secure
+# timestamp, no hardened runtime -- even though nothing in bin is
+# wrong.
 #
 # The hardened runtime (--options runtime) is required for
 # notarization, and it in turn requires the entitlement in
@@ -27,10 +35,10 @@
 set -e
 
 IDENTITY=${1}
-BINDIR=${2}
+DIR=${2}
 
 if [ -z "${IDENTITY}" ]; then
-    echo "usage: ${0} IDENTITY [BINDIR]" >&2
+    echo "usage: ${0} IDENTITY [DIR]" >&2
     exit 1
 fi
 
@@ -42,21 +50,24 @@ if [ ! -f "${ENTITLEMENTS}" ]; then
     exit 1
 fi
 
-if [ -z "${BINDIR}" ]; then
+if [ -z "${DIR}" ]; then
     SCHEME=$(command -v mit-scheme || true)
     if [ -z "${SCHEME}" ]; then
-        echo "${0}: no BINDIR given and mit-scheme is not on PATH" >&2
+        echo "${0}: no DIR given and mit-scheme is not on PATH" >&2
         exit 1
     fi
     BINDIR=$(dirname "$(readlink -f "${SCHEME}" 2>/dev/null || echo "${SCHEME}")")
+    DIR=$(dirname "${BINDIR}")
 fi
 
-# Sign the real executables; the installed names are symlinks to them,
-# and codesign follows those to the same file.
-for f in "${BINDIR}"/*; do
-    [ -f "${f}" ] || continue           # skip the symlinks
+# -type f does not follow symlinks, so the symlinked entry-point names
+# are skipped and each real file is signed exactly once.  Match bare
+# Mach-O rather than Mach-O executables: shared libraries need signing
+# too, since the hardened runtime enables library validation and would
+# otherwise refuse to load an FFI plugin at all.
+find "${DIR}" -type f | while IFS= read -r f; do
     case $(file -b "${f}") in
-        *Mach-O*executable*)
+        *Mach-O*)
             echo "signing ${f}"
             codesign --force --timestamp \
                      --sign "${IDENTITY}" \
@@ -69,10 +80,9 @@ done
 
 echo
 echo "verifying:"
-for f in "${BINDIR}"/*; do
-    [ -f "${f}" ] || continue
+find "${DIR}" -type f | while IFS= read -r f; do
     case $(file -b "${f}") in
-        *Mach-O*executable*)
+        *Mach-O*)
             codesign --verify --strict --verbose=2 "${f}" 2>&1 | sed "s|^|  |"
             ;;
     esac
