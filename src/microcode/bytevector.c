@@ -75,7 +75,8 @@ memory_to_bytevector (unsigned long n_bytes, const void * vp)
 DEFINE_PRIMITIVE ("allocate-bytevector", Prim_allocate_bytevector, 1, 1, 0)
 {
   PRIMITIVE_HEADER (1);
-  PRIMITIVE_RETURN (allocate_bytevector (arg_ulong_integer (1)));
+  PRIMITIVE_RETURN
+    (allocate_bytevector (arg_ulong_index_integer (1, (1UL << DATUM_LENGTH))));
 }
 
 DEFINE_PRIMITIVE ("bytevector?", Prim_bytevector_p, 1, 1, 0)
