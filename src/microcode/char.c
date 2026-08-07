@@ -95,13 +95,13 @@ DEFINE_PRIMITIVE ("INTEGER->CHAR", Prim_integer_to_char, 1, 1, 0)
 long
 char_downcase (long c)
 {
-  return ((isupper (c)) ? ((c - 'A') + 'a') : c);
+  return (((c < MAX_ASCII) && (isupper (c))) ? ((c - 'A') + 'a') : c);
 }
 
 long
 char_upcase (long c)
 {
-  return ((islower (c)) ? ((c - 'a') + 'A') : c);
+  return (((c < MAX_ASCII) && (islower (c))) ? ((c - 'a') + 'A') : c);
 }
 
 DEFINE_PRIMITIVE ("CHAR-DOWNCASE", Prim_char_downcase, 1, 1, 0)
