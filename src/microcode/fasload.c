@@ -54,6 +54,15 @@ static SCHEME_OBJECT * new_prim_table;
    + (FASLHDR_N_PRIMITIVES (h))						\
    + (FASLHDR_PRIMITIVE_TABLE_SIZE (h)))
 
+#ifdef CC_IS_C
+#define REQUIRED_C_CODE_HEAP(h) \
+  (((FASLHDR_C_CODE_TABLE_SIZE (h)) > (FASLHDR_PRIMITIVE_TABLE_SIZE (h))) \
+   ? ((FASLHDR_C_CODE_TABLE_SIZE (h)) - (FASLHDR_PRIMITIVE_TABLE_SIZE (h))) \
+   : 0)
+#else
+#define REQUIRED_C_CODE_HEAP(h) 0
+#endif
+
 struct load_band_termination_state
 {
   const char * file_name;
@@ -258,6 +267,7 @@ read_band_file (SCHEME_OBJECT s)
   if (!allocations_ok_p
       ((FASLHDR_CONSTANT_SIZE (fh)),
        ((REQUIRED_HEAP (fh))
+	+ (REQUIRED_C_CODE_HEAP (fh))
 	+ (((FASLHDR_VERSION (fh)) >= FASL_VERSION_EPHEMERONS)
 	   ? (compute_extra_ephemeron_space (FASLHDR_EPHEMERON_COUNT (fh)))
 	   : 0)),
