@@ -451,7 +451,7 @@ DEFUN_PROCESS_ACCESSOR
 int
 OS_process_valid_p (Tprocess process)
 {
-  if (process > OS_process_table_size)
+  if (process >= OS_process_table_size)
     return (0);
   switch (PROCESS_RAW_STATUS (process))
     {

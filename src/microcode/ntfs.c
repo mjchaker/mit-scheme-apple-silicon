@@ -46,6 +46,8 @@ NT_get_file_info (const char * namestring, BY_HANDLE_FILE_INFORMATION * info,
   char nscopy [MAX_PATH];
   HANDLE hfile;
 
+  if ((strlen (namestring)) >= (sizeof (nscopy)))
+    NT_error_api_call (ERROR_FILENAME_EXCED_RANGE, apicall_CreateFile);
   strcpy (nscopy, namestring);
   {
     unsigned int len = (strlen (nscopy));
@@ -477,6 +479,11 @@ OS_directory_open (const char * search_pattern)
 {
   char pattern [MAX_PATH];
   nt_dir * dir = (OS_malloc (sizeof (nt_dir)));
+  if (((strlen (search_pattern)) + 4) > (sizeof (pattern)))
+    {
+      free (dir);
+      NT_error_api_call (ERROR_FILENAME_EXCED_RANGE, apicall_FindFirstFile);
+    }
   strcpy (pattern, search_pattern);
   {
     unsigned int len = (strlen (pattern));

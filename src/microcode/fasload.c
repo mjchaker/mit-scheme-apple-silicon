@@ -54,6 +54,15 @@ static SCHEME_OBJECT * new_prim_table;
    + (FASLHDR_N_PRIMITIVES (h))						\
    + (FASLHDR_PRIMITIVE_TABLE_SIZE (h)))
 
+#ifdef CC_IS_C
+#define REQUIRED_C_CODE_HEAP(h) \
+  (((FASLHDR_C_CODE_TABLE_SIZE (h)) > (FASLHDR_PRIMITIVE_TABLE_SIZE (h))) \
+   ? ((FASLHDR_C_CODE_TABLE_SIZE (h)) - (FASLHDR_PRIMITIVE_TABLE_SIZE (h))) \
+   : 0)
+#else
+#define REQUIRED_C_CODE_HEAP(h) 0
+#endif
+
 struct load_band_termination_state
 {
   const char * file_name;
@@ -258,6 +267,7 @@ read_band_file (SCHEME_OBJECT s)
   if (!allocations_ok_p
       ((FASLHDR_CONSTANT_SIZE (fh)),
        ((REQUIRED_HEAP (fh))
+	+ (REQUIRED_C_CODE_HEAP (fh))
 	+ (((FASLHDR_VERSION (fh)) >= FASL_VERSION_EPHEMERONS)
 	   ? (compute_extra_ephemeron_space (FASLHDR_EPHEMERON_COUNT (fh)))
 	   : 0)),
@@ -395,7 +405,8 @@ load_file (fasl_file_handle_t handle, unsigned long old_ephemeron_count)
 		    (FASLHDR_PRIMITIVE_TABLE_SIZE (fh)),
 		    handle);
     import_primitive_table
-      (raw_prim_table, (FASLHDR_N_PRIMITIVES (fh)), new_prim_table);
+      (raw_prim_table, (FASLHDR_PRIMITIVE_TABLE_SIZE (fh)),
+       (FASLHDR_N_PRIMITIVES (fh)), new_prim_table);
   }
 #ifdef CC_IS_C
   if (FASLHDR_BAND_P (fh))
@@ -516,10 +527,13 @@ DEFINE_GC_HANDLER (handle_primitive)
 {
   unsigned long datum = (OBJECT_DATUM (object));
   unsigned long high_bits = (datum >> HALF_DATUM_LENGTH);
+  unsigned long index = ((high_bits != 0) ? high_bits : datum);
+  if (index >= (FASLHDR_N_PRIMITIVES (fh)))
+    signal_error_from_primitive (ERR_FASL_FILE_BAD_DATA);
   (*scan)
     = (MAKE_OBJECT_FROM_OBJECTS
        (object,
-	(new_prim_table [((high_bits != 0) ? high_bits : datum)])));
+	(new_prim_table [index])));
   return (scan + 1);
 }
 
