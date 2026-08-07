@@ -46,6 +46,8 @@ NT_get_file_info (const char * namestring, BY_HANDLE_FILE_INFORMATION * info,
   char nscopy [MAX_PATH];
   HANDLE hfile;
 
+  if ((strlen (namestring)) >= (sizeof (nscopy)))
+    NT_error_api_call (ERROR_FILENAME_EXCED_RANGE, apicall_CreateFile);
   strcpy (nscopy, namestring);
   {
     unsigned int len = (strlen (nscopy));
