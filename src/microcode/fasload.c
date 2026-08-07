@@ -395,7 +395,8 @@ load_file (fasl_file_handle_t handle, unsigned long old_ephemeron_count)
 		    (FASLHDR_PRIMITIVE_TABLE_SIZE (fh)),
 		    handle);
     import_primitive_table
-      (raw_prim_table, (FASLHDR_N_PRIMITIVES (fh)), new_prim_table);
+      (raw_prim_table, (FASLHDR_PRIMITIVE_TABLE_SIZE (fh)),
+       (FASLHDR_N_PRIMITIVES (fh)), new_prim_table);
   }
 #ifdef CC_IS_C
   if (FASLHDR_BAND_P (fh))

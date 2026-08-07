@@ -364,7 +364,7 @@ extern unsigned long primitive_table_export_length (void);
 extern void export_primitive_table (SCHEME_OBJECT *);
 
 extern void import_primitive_table
-  (SCHEME_OBJECT *, unsigned long, SCHEME_OBJECT *);
+  (SCHEME_OBJECT *, unsigned long, unsigned long, SCHEME_OBJECT *);
 
 extern void initialize_primitives (void);
 extern SCHEME_OBJECT make_primitive (const char *, int);
