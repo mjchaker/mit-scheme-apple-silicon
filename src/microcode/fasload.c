@@ -516,10 +516,13 @@ DEFINE_GC_HANDLER (handle_primitive)
 {
   unsigned long datum = (OBJECT_DATUM (object));
   unsigned long high_bits = (datum >> HALF_DATUM_LENGTH);
+  unsigned long index = ((high_bits != 0) ? high_bits : datum);
+  if (index >= (FASLHDR_N_PRIMITIVES (fh)))
+    signal_error_from_primitive (ERR_FASL_FILE_BAD_DATA);
   (*scan)
     = (MAKE_OBJECT_FROM_OBJECTS
        (object,
-	(new_prim_table [((high_bits != 0) ? high_bits : datum)])));
+	(new_prim_table [index])));
   return (scan + 1);
 }
 
