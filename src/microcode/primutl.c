@@ -507,14 +507,26 @@ table_entry_length (unsigned long code)
 
 void
 import_primitive_table (SCHEME_OBJECT * entries,
+			unsigned long table_size,
 			unsigned long n_entries,
 			SCHEME_OBJECT * primitives)
 {
+  SCHEME_OBJECT * end = (entries + table_size);
   unsigned long i;
   for (i = 0; (i < n_entries); i += 1)
     {
-      long arity = (FIXNUM_TO_LONG (*entries++));
-      SCHEME_OBJECT prim
+      unsigned long n_words;
+      long arity;
+      SCHEME_OBJECT prim;
+
+      if ((entries + 2) > end)
+	signal_error_from_primitive (ERR_FASL_FILE_BAD_DATA);
+      n_words = (OBJECT_DATUM (entries[1]));
+      if (n_words > ((unsigned long) (end - (entries + 2))))
+	signal_error_from_primitive (ERR_FASL_FILE_BAD_DATA);
+
+      arity = (FIXNUM_TO_LONG (*entries++));
+      prim
 	= (find_primitive
 	   ((MAKE_POINTER_OBJECT (TC_CHARACTER_STRING, entries)),
 	    true, true, arity));
@@ -523,6 +535,6 @@ import_primitive_table (SCHEME_OBJECT * entries,
 	signal_error_from_primitive (ERR_WRONG_ARITY_PRIMITIVES);
 
       (*primitives++) = prim;
-      entries += (1 + (OBJECT_DATUM (*entries)));
+      entries += (1 + n_words);
     }
 }
