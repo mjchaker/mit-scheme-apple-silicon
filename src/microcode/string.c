@@ -568,7 +568,8 @@ DEFINE_PRIMITIVE ("ALLOCATE-EXTERNAL-STRING", Prim_alloc_external_string, 1, 1, 
 {
   PRIMITIVE_HEADER (1);
   {
-    unsigned long n_bytes = (arg_ulong_integer (1));
+    unsigned long n_bytes
+      = (arg_ulong_index_integer (1, (ULONG_MAX - (sizeof (ht_record_t)))));
     ht_record_t * result = (malloc (n_bytes + 1 + (sizeof (ht_record_t))));
     if (result == 0)
       error_bad_range_arg (1);
