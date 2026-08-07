@@ -481,7 +481,7 @@ DEFINE_PRIMITIVE ("win32-query-registry-value", Prim_win32_query_registry_value,
       case REG_SZ:
       case REG_EXPAND_SZ:
       case REG_MULTI_SZ:
-	result = (allocate_string (data_size - 1));
+	result = (allocate_string ((data_size == 0) ? 0 : (data_size - 1)));
 	data = ((BYTE *) (STRING_BYTE_PTR (result)));
 	break;
 
