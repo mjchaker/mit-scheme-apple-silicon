@@ -479,6 +479,11 @@ OS_directory_open (const char * search_pattern)
 {
   char pattern [MAX_PATH];
   nt_dir * dir = (OS_malloc (sizeof (nt_dir)));
+  if (((strlen (search_pattern)) + 4) > (sizeof (pattern)))
+    {
+      free (dir);
+      NT_error_api_call (ERROR_FILENAME_EXCED_RANGE, apicall_FindFirstFile);
+    }
   strcpy (pattern, search_pattern);
   {
     unsigned int len = (strlen (pattern));
