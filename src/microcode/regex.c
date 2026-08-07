@@ -418,6 +418,8 @@ re_compile_fastmap (unsigned char * pattern_start,
 	int offset;
 
 	READ_PATTERN_OFFSET (offset);
+	if (stack_pointer == (& (stack_start [RE_NFAILURES])))
+	  RE_RETURN (1);
 	(*stack_pointer++) = (pattern_pc + offset);
 	goto loop;
       }
