@@ -30,9 +30,6 @@ USA.
 #include "config.h"
 #include "fasl.h"
 
-/* Defined in cmpint.c; see cmpint.h for the W^X shadow conventions.  */
-extern unsigned long cc_exec_delta;
-
 static void encode_fasl_header (SCHEME_OBJECT *, fasl_header_t *);
 static bool decode_fasl_header (SCHEME_OBJECT *, fasl_header_t *);
 
