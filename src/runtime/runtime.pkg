@@ -5607,6 +5607,68 @@ USA.
 	  make-condition-variable
 	  unlock-thread-mutex-and-wait))
 
+(define-package (runtime task)
+  (files "task")
+  (parent (runtime))
+  (export ()
+	  actor-async
+	  actor-call
+	  actor-isolated?
+	  actor-name
+	  actor?
+	  async
+	  async-let
+	  async-stream->list
+	  async-stream-finish!
+	  async-stream-finished?
+	  async-stream-for-each
+	  async-stream-name
+	  async-stream-next
+	  async-stream-yield!
+	  async-stream?
+	  await
+	  cancel-task!
+	  cancellation-error/task
+	  cancellation-error?
+	  check-task-cancellation
+	  condition-type:task-cancelled
+	  current-actor
+	  current-task
+	  make-actor
+	  make-async-stream
+	  make-task-local
+	  spawn-detached-task
+	  spawn-task
+	  task-cancelled?
+	  task-continuation-fail!
+	  task-continuation-resume!
+	  task-continuation?
+	  task-done?
+	  task-group->list
+	  task-group-add!
+	  task-group-add-unless-cancelled!
+	  task-group-cancel-all!
+	  task-group-cancelled?
+	  task-group-empty?
+	  task-group-for-each
+	  task-group-next
+	  task-group-wait-all
+	  task-group?
+	  task-local-default
+	  task-local-name
+	  task-local-ref
+	  task-local?
+	  task-name
+	  task-sleep
+	  task-state
+	  task-thread
+	  task-yield
+	  task?
+	  with-task-cancellation-handler
+	  with-task-continuation
+	  with-task-group
+	  with-task-local))
+
 (define-package (runtime rb-tree)
   (files "rbtree")
   (parent (runtime))

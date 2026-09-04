@@ -171,6 +171,7 @@ USA.
     ("sysclk"	(runtime system-clock))
     ("sysmac"	(runtime system-macros))
     ("system"	(runtime system))
+    ("task"	(runtime task))
     ("textual-port" (runtime port))
     ("thread"	(runtime thread))
     ("thread-barrier" (runtime thread barrier))
