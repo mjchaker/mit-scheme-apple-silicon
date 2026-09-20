@@ -20,7 +20,8 @@ noting "the x86 hardware supports it, but aarch64 hardware generally
 doesn't."
 
 The [Reference Manual and User's Manual](https://www.gnu.org/software/mit-scheme/documentation/)
-apply to this port unchanged.
+apply to this port unchanged. The one addition to the language is a
+[structured concurrency library](CONCURRENCY.md) modelled on Swift's.
 
 ## Install the binary
 
@@ -181,6 +182,18 @@ packages and disk images — a bare Mach-O executable has nowhere to put
 the ticket. The executables inside are covered by the notarization
 record and validate online, so a user who copies them out while
 offline may still see a Gatekeeper prompt.
+
+## Structured concurrency
+
+The runtime gains a `(runtime task)` package that brings Swift's
+concurrency model to Scheme: `async`/`await`, cooperative cancellation,
+task groups and `async-let` with structured lifetimes, task-local
+values, actors whose isolation is released at suspension points, async
+streams, and checked continuations. It is built on the runtime's
+threads and needs nothing from the microcode.
+[CONCURRENCY.md](CONCURRENCY.md) has the Swift-to-Scheme mapping, the
+semantics, and examples; `TEST=runtime/test-task make check` runs its
+tests.
 
 ## Upstream bugs found
 
