@@ -195,6 +195,21 @@ threads and needs nothing from the microcode.
 semantics, and examples; `TEST=runtime/test-task make check` runs its
 tests.
 
+## IDE
+
+[`ide/`](ide/) holds a small desktop IDE for MIT/GNU Scheme: an editor
+with syntax highlighting and completion, a console driving a live REPL,
+and a Run button that loads the buffer into it. It is one Python file
+that needs only the standard library with Tk and a `mit-scheme` binary:
+
+```sh
+python3 ide/mit_scheme_ide.py program.scm
+```
+
+Completion comes from the running interpreter, so builtins show their
+lambda lists and your own definitions complete as soon as they are
+evaluated. See [ide/README.md](ide/README.md).
+
 ## Upstream bugs found
 
 Three bugs in 12.1 surfaced while porting, two still present in
