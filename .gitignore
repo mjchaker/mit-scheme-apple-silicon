@@ -210,3 +210,5 @@ src/xml/Tags.sh
 
 # Distribution images built by src/etc/macos-make-dmg.sh
 *.dmg
+__pycache__/
+*.pyc
