@@ -203,6 +203,13 @@ upstream master. They are written up in
 `fasdump.c` that silently corrupts the primitive table of every FASL
 file dumped on macOS 26+.
 
+## Developer documentation
+
+[docs/](docs/README.md) has source-level guides to the microcode, the
+LIAR compiler and its AArch64 backend, the boot sequence and package
+system, the build system, the test framework, and the runtime library.
+They go into more detail than the upstream READMEs.
+
 ## License
 
 GPL-2.0-or-later, inherited from MIT/GNU Scheme, with the OpenSSL
