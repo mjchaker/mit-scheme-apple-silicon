@@ -212,3 +212,4 @@ src/xml/Tags.sh
 *.dmg
 __pycache__/
 *.pyc
+ide/macos/MITSchemeIDE.png

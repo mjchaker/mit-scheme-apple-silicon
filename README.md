@@ -208,7 +208,8 @@ python3 ide/mit_scheme_ide.py program.scm
 
 Completion comes from the running interpreter, so builtins show their
 lambda lists and your own definitions complete as soon as they are
-evaluated. See [ide/README.md](ide/README.md).
+evaluated. `ide/macos/` packages it as a double-clickable app in a
+disk image. See [ide/README.md](ide/README.md).
 
 ## Upstream bugs found
 
